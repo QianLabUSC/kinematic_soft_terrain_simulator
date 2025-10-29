@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>dense_ground_truth_generator</name>
+  <name>safe_scout_simulator</name>
   <version>0.1.0</version>
-  <description>A ROS2 package for generating dense ground truth data using Gaussian distributions</description>
+  <description>Simulation utilities for safe scouting, including ground truth generation, spatial measurements, and drive kinematics.</description>
   <maintainer email="user@example.com">user</maintainer>
   <license>MIT</license>
 
@@ -14,6 +14,7 @@
   <depend>std_msgs</depend>
   <depend>geometry_msgs</depend>
   <depend>trusses_custom_interfaces</depend>
+  <depend>tf2_ros</depend>
 
   <exec_depend>rosidl_default_runtime</exec_depend>
   <exec_depend>rclpy</exec_depend>

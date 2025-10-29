@@ -8,7 +8,7 @@ from rclpy.node import Node
 from geometry_msgs.msg import Pose
 from trusses_custom_interfaces.msg import SpatialMeasurement
 
-from dense_ground_truth_generator.srv import SampleGroundTruth
+from safe_scout_simulator.srv import SampleGroundTruth
 
 
 class SpatialMeasurementPublisher(Node):

@@ -3,7 +3,7 @@
 #include <random>
 #include <cmath>
 #include "rclcpp/rclcpp.hpp"
-#include "dense_ground_truth_generator/srv/sample_ground_truth.hpp"
+#include "safe_scout_simulator/srv/sample_ground_truth.hpp"
 
 struct Gaussian2D {
     double mean_x;
@@ -111,7 +111,7 @@ public:
             num_gaussians, lipschitz_constant, random_seed);
 
         // Create service
-        service_ = this->create_service<dense_ground_truth_generator::srv::SampleGroundTruth>(
+        service_ = this->create_service<safe_scout_simulator::srv::SampleGroundTruth>(
             "sample_ground_truth",
             std::bind(&GroundTruthServerNode::handleSampleRequest, this,
                       std::placeholders::_1, std::placeholders::_2));
@@ -130,8 +130,8 @@ public:
 
 private:
     void handleSampleRequest(
-        const std::shared_ptr<dense_ground_truth_generator::srv::SampleGroundTruth::Request> request,
-        std::shared_ptr<dense_ground_truth_generator::srv::SampleGroundTruth::Response> response) {
+        const std::shared_ptr<safe_scout_simulator::srv::SampleGroundTruth::Request> request,
+        std::shared_ptr<safe_scout_simulator::srv::SampleGroundTruth::Response> response) {
 
         response->value = generator_->sample(request->x, request->y);
 
@@ -139,7 +139,7 @@ private:
                      request->x, request->y, response->value);
     }
 
-    rclcpp::Service<dense_ground_truth_generator::srv::SampleGroundTruth>::SharedPtr service_;
+    rclcpp::Service<safe_scout_simulator::srv::SampleGroundTruth>::SharedPtr service_;
     std::unique_ptr<DenseGroundTruthGenerator> generator_;
 };
 

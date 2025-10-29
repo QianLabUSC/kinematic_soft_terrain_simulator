@@ -7,14 +7,14 @@ import os
 
 def generate_launch_description():
     # Get the package directory
-    pkg_dir = get_package_share_directory('dense_ground_truth_generator')
+    pkg_dir = get_package_share_directory('safe_scout_simulator')
 
     # Path to the configuration file
     config_file = os.path.join(pkg_dir, 'config', 'ground_truth_params.yaml')
 
     # Ground truth server node
     ground_truth_server = Node(
-        package='dense_ground_truth_generator',
+        package='safe_scout_simulator',
         executable='ground_truth_server',
         name='ground_truth_server',
         output='screen',
@@ -27,7 +27,7 @@ def generate_launch_description():
         period=2.0,
         actions=[
             Node(
-                package='dense_ground_truth_generator',
+                package='safe_scout_simulator',
                 executable='rbf_visualization.py',
                 name='rbf_visualization',
                 output='screen',

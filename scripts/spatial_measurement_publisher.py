@@ -50,6 +50,7 @@ class SpatialMeasurementPublisher(Node):
         self._reported_waiting = False
         self._pending_future = None
         self._current_pose = None
+        self._previous_pose = None  # Store previous pose for comparison
 
         self.timer = self.create_timer(publish_interval, self._timer_callback)
 
@@ -67,6 +68,16 @@ class SpatialMeasurementPublisher(Node):
                 self._reported_waiting = True
             return
         self._reported_waiting = False
+
+        # Check if pose has changed from previous pose
+        if self._previous_pose is not None:
+            # Compare positions (x, y) - ignoring z for 2D
+            pos_diff_x = abs(self._current_pose.position.x - self._previous_pose.position.x)
+            pos_diff_y = abs(self._current_pose.position.y - self._previous_pose.position.y)
+            # Only check position, not orientation, for terrain measurement
+            if pos_diff_x < 1e-6 and pos_diff_y < 1e-6:
+                # Pose hasn't changed, skip terrain request
+                return
 
         pose_snapshot = Pose()
         pose_snapshot.position.x = self._current_pose.position.x
@@ -110,6 +121,16 @@ class SpatialMeasurementPublisher(Node):
         measurement.time = self.get_clock().now().to_msg()
 
         self.spatial_pub.publish(measurement)
+        
+        # Update previous pose after successful measurement
+        self._previous_pose = Pose()
+        self._previous_pose.position.x = pose.position.x
+        self._previous_pose.position.y = pose.position.y
+        self._previous_pose.position.z = pose.position.z
+        self._previous_pose.orientation.x = pose.orientation.x
+        self._previous_pose.orientation.y = pose.orientation.y
+        self._previous_pose.orientation.z = pose.orientation.z
+        self._previous_pose.orientation.w = pose.orientation.w
 
 
 def main(args=None) -> None:

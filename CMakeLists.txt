@@ -12,6 +12,8 @@ find_package(std_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(rosidl_default_generators REQUIRED)
 find_package(trusses_custom_interfaces REQUIRED)
+find_package(foxglove_msgs REQUIRED)
+find_package(ament_index_cpp REQUIRED)
 
 # Generate service interfaces
 rosidl_generate_interfaces(${PROJECT_NAME}
@@ -20,7 +22,7 @@ rosidl_generate_interfaces(${PROJECT_NAME}
 
 # Add executable
 add_executable(ground_truth_server src/ground_truth_server.cpp)
-ament_target_dependencies(ground_truth_server rclcpp std_msgs geometry_msgs)
+ament_target_dependencies(ground_truth_server rclcpp std_msgs geometry_msgs foxglove_msgs ament_index_cpp)
 
 # Link service interfaces
 rosidl_get_typesupport_target(cpp_typesupport_target ${PROJECT_NAME} "rosidl_typesupport_cpp")
@@ -44,6 +46,7 @@ install(PROGRAMS
 install(DIRECTORY
   config
   launch
+  maps
   DESTINATION share/${PROJECT_NAME}
 )
 

@@ -115,14 +115,22 @@ private:
     }
 
 public:
-    static bool loadGaussiansFromCSV(const std::string &filepath, 
+    static bool loadGaussiansFromCSV(const std::string &filepath,
                                      double area_min_x, double area_max_x,
                                      double area_min_y, double area_max_y,
-                                     std::vector<Gaussian2D> &out_gaussians, 
+                                     std::vector<Gaussian2D> &out_gaussians,
                                      std::string &error) {
         std::ifstream file(filepath);
+        if (!file.is_open()) {
+            error = "Failed to open file: " + filepath;
+            return false;
+        }
         std::string header_line;
         std::getline(file, header_line);
+        if (!file.good()) {
+            error = "Failed to read header from file: " + filepath;
+            return false;
+        }
         auto headers = splitCSVLine(header_line);
         std::unordered_map<std::string, size_t> name_to_idx;
         for (size_t i = 0; i < headers.size(); ++i) {
@@ -152,7 +160,12 @@ public:
                 line_count++;
             }
         }
-        
+
+        if (line_count == 0) {
+            error = "No data lines found in file: " + filepath;
+            return false;
+        }
+
         // Reset file to beginning (after header)
         file.clear();
         file.seekg(0, std::ios::beg);
@@ -162,7 +175,7 @@ public:
         for (size_t i = 0; i < line_count; ++i) {
             std::getline(file, line);
             auto cols = splitCSVLine(line);
-            
+
             double x_norm = std::stod(cols[static_cast<size_t>(idx_x)]);
             double y_norm = std::stod(cols[static_cast<size_t>(idx_y)]);
             double std_x_norm = std::stod(cols[static_cast<size_t>(idx_std_x)]);
@@ -182,9 +195,9 @@ public:
             double std_x = std_x_norm * area_width;
             double std_y = std_y_norm * area_height;
 
-            Gaussian2D g; 
-            g.mean_x = x; 
-            g.mean_y = y; 
+            Gaussian2D g;
+            g.mean_x = x;
+            g.mean_y = y;
             g.std_x = std_x;
             g.std_y = std_y;
             g.rotation = rotation;
@@ -307,16 +320,27 @@ public:
         } else {
             std::vector<Gaussian2D> gs;
             std::string err;
-            DenseGroundTruthGenerator::loadGaussiansFromCSV(map_file, 
+            bool success = DenseGroundTruthGenerator::loadGaussiansFromCSV(map_file,
                                                              area_min_x, area_max_x,
                                                              area_min_y, area_max_y,
                                                              gs, err);
-            generator_ = std::make_unique<DenseGroundTruthGenerator>(
-                std::move(gs), area_min_x, area_max_x, area_min_y, area_max_y,
-                lipschitz_constant, random_seed);
-            setReportedNumGaussians(gs.size());
-            RCLCPP_INFO(this->get_logger(), "Loaded %zu gaussians from '%s'",
-                        generatorSize(), map_file.c_str());
+            if (!success || gs.empty()) {
+                RCLCPP_ERROR(this->get_logger(), "Failed to load gaussians from '%s': %s",
+                            map_file.c_str(), err.c_str());
+                RCLCPP_ERROR(this->get_logger(), "Falling back to random terrain generation");
+                generator_ = std::make_unique<DenseGroundTruthGenerator>(
+                    area_min_x, area_max_x, area_min_y, area_max_y,
+                    num_gaussians, lipschitz_constant, random_seed);
+                setReportedNumGaussians(static_cast<size_t>(num_gaussians));
+            } else {
+                size_t num_loaded = gs.size();  // Save size before move!
+                generator_ = std::make_unique<DenseGroundTruthGenerator>(
+                    std::move(gs), area_min_x, area_max_x, area_min_y, area_max_y,
+                    lipschitz_constant, random_seed);
+                setReportedNumGaussians(num_loaded);
+                RCLCPP_INFO(this->get_logger(), "Loaded %zu gaussians from '%s'",
+                            generatorSize(), map_file.c_str());
+            }
         }
 
         // Create service

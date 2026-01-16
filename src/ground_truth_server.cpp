@@ -332,12 +332,14 @@ public:
                     area_min_x, area_max_x, area_min_y, area_max_y,
                     num_gaussians, lipschitz_constant, random_seed);
                 setReportedNumGaussians(static_cast<size_t>(num_gaussians));
+                use_map_boundary_ = false;
             } else {
                 size_t num_loaded = gs.size();  // Save size before move!
                 generator_ = std::make_unique<DenseGroundTruthGenerator>(
                     std::move(gs), area_min_x, area_max_x, area_min_y, area_max_y,
                     lipschitz_constant, random_seed);
                 setReportedNumGaussians(num_loaded);
+                use_map_boundary_ = true;
                 RCLCPP_INFO(this->get_logger(), "Loaded %zu gaussians from '%s'",
                             generatorSize(), map_file.c_str());
             }
@@ -398,10 +400,43 @@ private:
         const std::shared_ptr<safe_scout_simulator::srv::SampleGroundTruth::Request> request,
         std::shared_ptr<safe_scout_simulator::srv::SampleGroundTruth::Response> response) {
 
-        response->value = generator_->sample(request->x, request->y);
+        response->value = sampleWithBoundary(request->x, request->y);
 
         RCLCPP_DEBUG(this->get_logger(), "Sampled (%.2f, %.2f) = %.4f",
                      request->x, request->y, response->value);
+    }
+
+    double sampleWithBoundary(double x, double y) const {
+        double value = generator_->sample(x, y);
+        if (!use_map_boundary_) {
+            return value;
+        }
+
+        double dist_to_edge = 0.0;
+        if (x >= area_min_x_ && x <= area_max_x_ && y >= area_min_y_ && y <= area_max_y_) {
+            double dx = std::min(x - area_min_x_, area_max_x_ - x);
+            double dy = std::min(y - area_min_y_, area_max_y_ - y);
+            dist_to_edge = std::min(dx, dy);
+        } else {
+            double dx_out = 0.0;
+            double dy_out = 0.0;
+            if (x < area_min_x_) {
+                dx_out = area_min_x_ - x;
+            } else if (x > area_max_x_) {
+                dx_out = x - area_max_x_;
+            }
+            if (y < area_min_y_) {
+                dy_out = area_min_y_ - y;
+            } else if (y > area_max_y_) {
+                dy_out = y - area_max_y_;
+            }
+            dist_to_edge = std::hypot(dx_out, dy_out);
+        }
+
+        double max_delta = kMaxBorderSlope * dist_to_edge;
+        double min_val = kOutsideValue - max_delta;
+        double max_val = kOutsideValue + max_delta;
+        return std::clamp(value, min_val, max_val);
     }
 
     void generateGridMap() {
@@ -431,7 +466,7 @@ private:
             for (int i = 0; i < grid_width_; ++i) {
                 double x = area_min_x_ + (i + 0.5) * cell_width;
                 double y = area_min_y_ + (j + 0.5) * cell_height;
-                double value = generator_->sample(x, y);
+                double value = sampleWithBoundary(x, y);
                 raw_values.push_back(value);
                 min_val = std::min(min_val, value);
                 max_val = std::max(max_val, value);
@@ -555,6 +590,10 @@ private:
     double grid_resolution_ = 0.3;  // Default resolution in meters
     double min_value_ = 0.0;
     double max_value_ = 0.0;
+    bool use_map_boundary_ = false;
+
+    static constexpr double kOutsideValue = 1.0;
+    static constexpr double kMaxBorderSlope = 1.0;
 };
 
 int main(int argc, char** argv) {

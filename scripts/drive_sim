@@ -28,7 +28,7 @@ class FullyActuated2DDriveSim(Node):
         # Subscriber to cmd_vel
         self.cmd_vel_sub = self.create_subscription(
             Twist,
-            'spirit/ghost_trot_control',
+            'spirit/planner_twist_command',
             self.cmd_vel_callback,
             10
         )
@@ -40,7 +40,7 @@ class FullyActuated2DDriveSim(Node):
         self.robot_marker_publisher = self.create_publisher(MarkerArray, 'spirit/current_pose_marker', 10)
 
         # TF broadcaster for map -> base_link
-        self.tf_broadcaster = TransformBroadcaster(self)
+        # self.tf_broadcaster = TransformBroadcaster(self)
 
         # Timer for simulation updates (10 Hz)
         self.timer_period = 0.1  # seconds
@@ -121,19 +121,19 @@ class FullyActuated2DDriveSim(Node):
 
         self.pose_pub.publish(pose_msg)
 
-        # Broadcast TF transform (map -> base_link) for Foxglove visualization
-        t = TransformStamped()
-        t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = "map"
-        t.child_frame_id = "base_link"
-        t.transform.translation.x = self.x
-        t.transform.translation.y = self.y
-        t.transform.translation.z = 0.0
-        t.transform.rotation.x = 0.0
-        t.transform.rotation.y = 0.0
-        t.transform.rotation.z = qz
-        t.transform.rotation.w = qw
-        self.tf_broadcaster.sendTransform(t)
+        # # Broadcast TF transform (map -> base_link) for Foxglove visualization
+        # t = TransformStamped()
+        # t.header.stamp = self.get_clock().now().to_msg()
+        # t.header.frame_id = "map"
+        # t.child_frame_id = "base_link"
+        # t.transform.translation.x = self.x
+        # t.transform.translation.y = self.y
+        # t.transform.translation.z = 0.0
+        # t.transform.rotation.x = 0.0
+        # t.transform.rotation.y = 0.0
+        # t.transform.rotation.z = qz
+        # t.transform.rotation.w = qw
+        # self.tf_broadcaster.sendTransform(t)
 
         # Publish robot position marker
         self.publish_robot_position_marker(pose_msg)

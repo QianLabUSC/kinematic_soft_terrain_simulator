@@ -246,10 +246,10 @@ class FullyActuated2DDriveSim(Node):
         yaw = 2.0 * math.atan2(qz, qw)
         
         # Offset forward by half body length + half head length
-        offset_distance = 0.2 + 0.05  # half body (0.2) + half head (0.1/2)
+        offset_distance = 0.14  # half body (0.2) + half head (0.1/2)
         head_marker.pose.position.x = pose_msg.position.x + offset_distance * math.cos(yaw)
         head_marker.pose.position.y = pose_msg.position.y + offset_distance * math.sin(yaw)
-        head_marker.pose.position.z = pose_msg.position.z
+        head_marker.pose.position.z = pose_msg.position.z + 0.03
 
         # Same orientation as body
         head_marker.pose.orientation = pose_msg.orientation
@@ -257,7 +257,7 @@ class FullyActuated2DDriveSim(Node):
         # Set head rectangle size (smaller than body)
         head_marker.scale.x = 0.1  # Length
         head_marker.scale.y = 0.25  # Width (slightly narrower than body)
-        head_marker.scale.z = 0.15  # Height (slightly shorter than body)
+        head_marker.scale.z = 0.21  # Height (slightly shorter than body)
 
         # Set color - yellow for head/front indicator
         head_marker.color.r = 1.0

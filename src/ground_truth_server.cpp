@@ -592,8 +592,8 @@ private:
     double max_value_ = 0.0;
     bool use_map_boundary_ = false;
 
-    static constexpr double kOutsideValue = 1.0;
-    static constexpr double kMaxBorderSlope = 1.0;
+    static constexpr double kOutsideValue = 0.0;
+    static constexpr double kMaxBorderSlope = 100.0;
 };
 
 int main(int argc, char** argv) {

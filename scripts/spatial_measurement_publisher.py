@@ -26,6 +26,7 @@ class SpatialMeasurementPublisher(Node):
         self.declare_parameter("unit", "unitless")
         self.declare_parameter("default_uncertainty", 0.0)
         self.declare_parameter("gaussian_noise_stddev", 0.0)
+        self.declare_parameter("position_noise_stddev", 0.01)  # Default 1cm noise on x,y positions
 
         pose_topic = self.get_parameter("pose_topic").get_parameter_value().string_value
         measurement_topic = (
@@ -41,6 +42,9 @@ class SpatialMeasurementPublisher(Node):
         self.default_uncertainty = (
             self.get_parameter("default_uncertainty").get_parameter_value().double_value
         )
+        self.position_noise_stddev = (
+            self.get_parameter("position_noise_stddev").get_parameter_value().double_value
+        )
 
         # Subscriptions and publications
         self.pose_sub = self.create_subscription(Pose, pose_topic, self._pose_callback, 10)
@@ -50,7 +54,6 @@ class SpatialMeasurementPublisher(Node):
         self._reported_waiting = False
         self._pending_future = None
         self._current_pose = None
-        self._previous_pose = None  # Store previous pose for comparison
 
         self.timer = self.create_timer(publish_interval, self._timer_callback)
 
@@ -69,19 +72,14 @@ class SpatialMeasurementPublisher(Node):
             return
         self._reported_waiting = False
 
-        # Check if pose has changed from previous pose
-        if self._previous_pose is not None:
-            # Compare positions (x, y) - ignoring z for 2D
-            pos_diff_x = abs(self._current_pose.position.x - self._previous_pose.position.x)
-            pos_diff_y = abs(self._current_pose.position.y - self._previous_pose.position.y)
-            # Only check position, not orientation, for terrain measurement
-            if pos_diff_x < 1e-6 and pos_diff_y < 1e-6:
-                # Pose hasn't changed, skip terrain request
-                return
+        # Add noise to x and y positions to simulate measurement uncertainty
+        # This ensures we publish measurements even when robot is stationary
+        position_noise_x = random.gauss(0.0, self.position_noise_stddev) if self.position_noise_stddev > 0.0 else 0.0
+        position_noise_y = random.gauss(0.0, self.position_noise_stddev) if self.position_noise_stddev > 0.0 else 0.0
 
         pose_snapshot = Pose()
-        pose_snapshot.position.x = self._current_pose.position.x
-        pose_snapshot.position.y = self._current_pose.position.y
+        pose_snapshot.position.x = self._current_pose.position.x + position_noise_x
+        pose_snapshot.position.y = self._current_pose.position.y + position_noise_y
         pose_snapshot.position.z = self._current_pose.position.z
         pose_snapshot.orientation.x = self._current_pose.orientation.x
         pose_snapshot.orientation.y = self._current_pose.orientation.y
@@ -107,6 +105,7 @@ class SpatialMeasurementPublisher(Node):
             return
 
         measurement = SpatialMeasurement()
+        # Use the noisy position from pose_snapshot (already has noise added)
         measurement.position.x = pose.position.x
         measurement.position.y = pose.position.y
         measurement.position.z = pose.position.z
@@ -121,16 +120,6 @@ class SpatialMeasurementPublisher(Node):
         measurement.time = self.get_clock().now().to_msg()
 
         self.spatial_pub.publish(measurement)
-        
-        # Update previous pose after successful measurement
-        self._previous_pose = Pose()
-        self._previous_pose.position.x = pose.position.x
-        self._previous_pose.position.y = pose.position.y
-        self._previous_pose.position.z = pose.position.z
-        self._previous_pose.orientation.x = pose.orientation.x
-        self._previous_pose.orientation.y = pose.orientation.y
-        self._previous_pose.orientation.z = pose.orientation.z
-        self._previous_pose.orientation.w = pose.orientation.w
 
 
 def main(args=None) -> None:

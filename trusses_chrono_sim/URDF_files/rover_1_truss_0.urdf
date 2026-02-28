@@ -1,0 +1,346 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="rover">
+
+	<material name="red">
+	<color rgba="0.8 0.0 0.2 1.0" />
+	</material>
+
+	<material name="orange">
+	<color rgba="0.945 0.35 0.133 1.0" />
+	</material>
+
+	<link name="body_rover0">
+		<collision group="default">
+        	<origin rpy="0 0 0" xyz="0 0 0" />
+        	<geometry>
+           	<box size="0.960 .160 .490" />
+        	</geometry>
+      		</collision>
+		<inertial>
+		<mass value="40" />
+  		<inertia ixx="3.29" ixy="0" ixz="0" iyy="3.16" iyz="0" izz="6.27" />
+		</inertial>
+  		<visual>
+          	<origin rpy="0 0 0" xyz="0 0 0" />
+          	<geometry>
+            	<box size="0.960 .160 .490" />
+          	</geometry>
+			<material name="darkgray">
+    			<color rgba="0.1 0.1 0.1 1.0"/>
+  			</material>
+  		</visual>
+  	</link>
+
+  <link name="arm0_base_rover0">
+  <visual>
+  	<origin rpy="0 0 0" xyz="0 0 -.1875" />
+  	<geometry>
+  	  <cylinder radius=".025" length=".375" />
+  	 </geometry>
+	 <material name="orange">
+	   <color rgba="0.945 0.35 0.133 1.0" />
+	 </material>
+  </visual>
+  <inertial>
+     <mass value=".01" />
+     <inertia ixx=".01" ixy="0" ixz="0" iyy=".001" iyz="0" izz=".01" />
+  </inertial>
+  <collision>
+    	<origin rpy="0 0 0" xyz="0 0 -.1875" />
+  	<geometry>
+  	  <cylinder radius=".025" length=".375" />
+  	 </geometry>
+  </collision>
+  </link>
+
+  <link name="arm0_twist_rover0">
+  <visual>
+  	<origin rpy="0 0 0" xyz="0 0 -.55" />
+  	<geometry>
+  	  <cylinder radius=".025" length=".375" />
+  	 </geometry>
+	 	 <material name="orange">
+	   <color rgba="0.945 0.35 0.133 1.0" />
+	 </material>
+  </visual>
+  <inertial>
+     <mass value=".01" />
+     <inertia ixx=".01" ixy="0" ixz="0" iyy=".001" iyz="0" izz=".01" />
+  </inertial>
+  <collision>
+    	<origin rpy="0 0 0" xyz="0 0 -.55" />
+  	<geometry>
+  	  <cylinder radius=".025" length=".375" />
+  	 </geometry>
+  </collision>
+  </link>
+
+  <link name="arm0_extension_rover0">
+  <visual>
+  	<origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <cylinder radius=".025" length=".75" />
+  	 </geometry>
+	 	 <material name="orange">
+	   <color rgba="0.945 0.35 0.133 1.0" />
+	 </material>
+  </visual>
+  <inertial>
+     <mass value=".01" />
+     <inertia ixx=".01" ixy="0" ixz="0" iyy=".001" iyz="0" izz=".01" />
+  </inertial>
+  <collision>
+    	<origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <cylinder radius=".025" length=".75" />
+  	 </geometry>
+  </collision>
+  </link>
+
+  <link name="arm0_base_turret_rover0">
+  <visual>
+  <origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <cylinder radius=".1" length=".05" />
+  	 </geometry>
+	 	 <material name="orange">
+	   <color rgba="0.945 0.35 0.133 1.0" />
+	 </material>
+  </visual>
+  <inertial>
+     <mass value=".01" />
+     <inertia ixx=".01" ixy="0" ixz="0" iyy=".001" iyz="0" izz=".01" />
+  </inertial>
+  <collision>
+    	<origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <cylinder radius=".1" length=".05" />
+  	 </geometry>
+  </collision>
+  </link>
+
+  <link name="arm0_extension_turret_rover0">
+  <visual>
+  <origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <cylinder radius=".1" length=".05" />
+  	 </geometry>
+	 	 <material name="orange">
+	   <color rgba="0.945 0.35 0.133 1.0" />
+	 </material>
+  </visual>
+  <inertial>
+     <mass value=".01" />
+     <inertia ixx=".01" ixy="0" ixz="0" iyy=".001" iyz="0" izz=".01" />
+  </inertial>
+  <collision>
+    	<origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <cylinder radius=".1" length=".05" />
+  	 </geometry>
+  </collision>
+  </link>
+
+  <link name="arm0_block_rover0">
+  <visual>
+  <origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	  <box size=".05 .05 .05" />
+  	 </geometry>
+     <material name="red" />
+  </visual>
+  <inertial>
+     <mass value=".01" />
+     <inertia ixx=".01" ixy="0" ixz="0" iyy=".001" iyz="0" izz=".01" />
+  </inertial>
+  <collision>
+    	<origin rpy="0 0 0" xyz="0 0 0" />
+  	<geometry>
+  	    <box size=".05 .05 .05" />
+  	 </geometry>
+  </collision>
+  </link>
+
+  <joint name="body_to_arm0_turret_rover0" type="continuous">
+  	<parent link="body_rover0" />
+  	<child link="arm0_base_turret_rover0" />
+  	<axis xyz="0 0 1" />
+  	<origin xyz=".2 .1 0" rpy="1.5707 0 0" />
+  </joint>
+
+  <joint name="arm0_base_to_turret_rover0" type="continuous">
+  	<parent link="arm0_base_turret_rover0" />
+  	<child link="arm0_base_rover0" />
+  	<axis xyz="0 1 0" />
+  	<origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="arm0_base_to_twist_rover0" type="continuous">
+  	<parent link="arm0_base_rover0" />
+  	<child link="arm0_twist_rover0" />
+  	<axis xyz="0 0 1" />
+  	<origin xyz="0 0 0" rpy="0 0 0" />
+  </joint>
+
+  <joint name="arm0_twist_to_extension_rover0" type="prismatic">
+  	<parent link="arm0_twist_rover0" />
+  	<child link="arm0_extension_rover0" />
+  	<origin xyz="0 0 -1.15" rpy="0 0 0" />
+    <limit effort="1000" lower="0" upper="0.707" velocity="300" />
+  </joint>
+  
+  <joint name="arm0_extension_to_turret_rover0" type="continuous">
+  	<parent link="arm0_extension_rover0" />
+  	<child link="arm0_extension_turret_rover0" />
+  	<axis xyz="0 1 0" />
+  	<origin xyz="0 0 -.375" rpy="0 0 0" />
+  </joint>
+  
+  <joint name="arm0_extension_turret_to_block_rover0" type="continuous">
+  	<parent link="arm0_extension_turret_rover0" />
+  	<child link="arm0_block_rover0" />
+  	<axis xyz="0 0 1" />
+  	<origin xyz="0 0 -.08" rpy="0 0 0" />
+  </joint>
+
+	<joint name="front_right_joint_rover0" type="continuous">
+    	<parent link="body_rover0" />
+      	<child link="front_right_wheel_rover0" />
+      	<origin xyz=".404 0 .3" rpy="0 0 0" />
+      	<axis xyz="0 0 1" />
+	</joint>
+	<link name="front_right_wheel_rover0">
+		<collision group="default">
+        	<origin rpy="0 0 0" xyz="0 0 0" />
+        	<geometry>
+           	<cylinder length="0.076" radius="0.3" />
+        	</geometry>
+      		</collision>
+		<visual>
+          	<origin rpy="0 0 0" xyz="0 0 0" />
+          	<geometry>
+            	<cylinder length="0.076" radius="0.3" />
+          	</geometry>
+  			<material name="silver">
+    			<color rgba="0.3 0.3 0.3 1.0"/>
+  			</material>
+		</visual>
+		<inertial>
+      		<mass value="2" />
+      		<inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02" />
+    		</inertial>
+	</link>
+
+	<joint name="front_left_joint_rover0" type="continuous">
+    	<parent link="body_rover0" />
+      	<child link="front_left_wheel_rover0" />
+      	<origin xyz=".404 0 -.3" rpy="0 0 0" />
+      	<axis xyz="0 0 1" />
+	</joint>
+	<link name="front_left_wheel_rover0">
+		<collision group="default">
+        	<origin rpy="0 0 0" xyz="0 0 0" />
+        	<geometry>
+           	<cylinder length="0.076" radius="0.3" />
+        	</geometry>
+      		</collision>
+		<visual>
+          	<origin rpy="0 0 0" xyz="0 0 0" />
+          	<geometry>
+            	<cylinder length="0.076" radius="0.3" />
+          	</geometry>
+  			<material name="silver">
+    			<color rgba="0.3 0.3 0.3 1.0"/>
+  			</material>
+		</visual>
+		<inertial>
+      		<mass value="10" />
+      		<inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02" />
+    		</inertial>
+	</link>
+
+	<joint name="back_right_joint_rover0" type="continuous">
+    	<parent link="body_rover0" />
+      	<child link="back_right_wheel_rover0" />
+      	<origin xyz="-.404 0 .3" rpy="0 0 0" />
+      	<axis xyz="0 0 1" />
+	</joint>
+	<link name="back_right_wheel_rover0">
+		<collision group="default">
+        	<origin rpy="0 0 0" xyz="0 0 0" />
+        	<geometry>
+           	<cylinder length="0.076" radius="0.3" />
+        	</geometry>
+      		</collision>
+		<visual>
+          	<origin rpy="0 0 0" xyz="0 0 0" />
+          	<geometry>
+            	<cylinder length="0.076" radius="0.3" />
+          	</geometry>
+  			<material name="silver">
+    			<color rgba="0.3 0.3 0.3 1.0"/>
+  			</material>
+		</visual>
+		<inertial>
+      		<mass value="2" />
+      		<inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02" />
+    		</inertial>
+	</link>
+
+	<joint name="back_left_joint_rover0" type="continuous">
+    	<parent link="body_rover0" />
+      	<child link="back_left_wheel_rover0" />
+      	<origin xyz="-.404 0 -.3" rpy="0 0 0" />
+      	<axis xyz="0 0 1" />
+	</joint>
+	<link name="back_left_wheel_rover0">
+		<collision group="default">
+        	<origin rpy="0 0 0" xyz="0 0 0" />
+        	<geometry>
+           	<cylinder length="0.076" radius="0.3" />
+        	</geometry>
+      		</collision>
+		<visual>
+          	<origin rpy="0 0 0" xyz="0 0 0" />
+          	<geometry>
+            	<cylinder length="0.076" radius="0.3" />
+          	</geometry>
+  			<material name="silver">
+    			<color rgba="0.3 0.3 0.3 1.0"/>
+  			</material>
+		</visual>
+		<inertial>
+      		<mass value="2" />
+      		<inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02" />
+    		</inertial>
+	</link>
+
+  	<joint name="probe_joint_rover0" type="prismatic">
+		<parent link="body_rover0" />
+		<child link="probe_rover0" />
+		<origin xyz="0 0 0" rpy="-1.5707 0 0" />
+		<limit effort="1000" lower="-0.707" upper="0.707" velocity="300" />
+  	</joint>
+
+	<link name="probe_rover0">
+		<collision group="default">
+        	<origin rpy="0 0 0" xyz="0 0 0" />
+        	<geometry>
+           	<cylinder length=".4" radius="0.05" />
+        	</geometry>
+      		</collision>
+		<visual>
+          	<origin rpy="0 0 0" xyz="0 0 0" />
+          	<geometry>
+            	<cylinder length=".15" radius="0.05" />
+          	</geometry>
+          	<material name="black">
+              	<color rgba="0 0 0 1" />
+          	</material>
+		</visual>
+		<inertial>
+      		<mass value="2" />
+      		<inertia ixx="0.02" ixy="0.0" ixz="0.0" iyy="0.02" iyz="0.0" izz="0.02" />
+    		</inertial>
+	</link>
+</robot>

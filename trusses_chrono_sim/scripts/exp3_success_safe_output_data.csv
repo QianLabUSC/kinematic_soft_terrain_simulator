@@ -1,0 +1,2 @@
+time_s,body_mass,leg_mass,pos_x,pos_y,pos_z,rot_e0,rot_e1,rot_e2,rot_e3,vel_x,vel_y,vel_z,prev_wp_x,prev_wp_y,prev_wp_z,next_wp_x,next_wp_y,next_wp_z,torque_0,torque_1,torque_2,torque_3,torque_4,torque_5
+0,80,0.39,-4.5,-7.5,0.09,0.707107,0,0,0.707107,0,0,0,-4.5,-7.5,0.09,-4.5,-3,0,0,0,0,0,0,0

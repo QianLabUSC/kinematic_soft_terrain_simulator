@@ -1,0 +1,63 @@
+# Compiled source #
+###################
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Packages #
+############
+# it's better to unpack these files and commit the raw source
+# git has its own built in compression methods
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Logs and databases #
+######################
+*.log
+*.sql
+*.sqlite
+*.dat
+
+# OS generated files #
+######################
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+#VSCODE Files #
+######################
+.vscode/*
+**/.vscode/
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# MISC #
+#####################
+*.swp
+
+#Ignore all built files in bin but still populate the directory
+bin/*
+!bin/.gitkeep
+
+#Ignore all png files in output_frames but still populate the create video script
+output_frames/*
+!output_frames/create_video.sh
+scripts/frames/frame*.png
+scripts/frames/

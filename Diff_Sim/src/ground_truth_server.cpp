@@ -8,6 +8,7 @@
 #include "safe_scout_simulator/srv/sample_ground_truth.hpp"
 #include <algorithm>
 #include <chrono>
+#include <cctype>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
@@ -107,10 +108,18 @@ private:
     try {
       size_t idx = 0;
       out = std::stod(s, &idx);
-      return idx > 0;
+      while (idx < s.size() &&
+             std::isspace(static_cast<unsigned char>(s[idx]))) {
+        idx++;
+      }
+      return idx > 0 && idx == s.size();
     } catch (...) {
       return false;
     }
+  }
+
+  static bool isWhitespaceOnly(const std::string &s) {
+    return s.find_first_not_of(" \t\r\n") == std::string::npos;
   }
 
 public:
@@ -152,50 +161,115 @@ public:
     int idx_rotation = findIdx({"rotation", "theta", "angle"});
     int idx_amp = findIdx({"amplitude", "amp", "a"});
 
-    // Count total lines first
-    std::string line;
-    size_t line_count = 0;
-    while (std::getline(file, line)) {
-      if (!line.empty()) {
-        line_count++;
+    std::vector<std::string> missing_columns;
+    if (idx_x < 0)
+      missing_columns.emplace_back("gaussian_x/mean_x/x");
+    if (idx_y < 0)
+      missing_columns.emplace_back("gaussian_y/mean_y/y");
+    if (idx_std_x < 0)
+      missing_columns.emplace_back("std_x/sigma_x");
+    if (idx_std_y < 0)
+      missing_columns.emplace_back("std_y/sigma_y");
+    if (idx_rotation < 0)
+      missing_columns.emplace_back("rotation/theta/angle");
+    if (idx_amp < 0)
+      missing_columns.emplace_back("amplitude/amp/a");
+    if (!missing_columns.empty()) {
+      std::stringstream ss;
+      ss << "Missing required columns: ";
+      for (size_t i = 0; i < missing_columns.size(); ++i) {
+        if (i > 0) {
+          ss << ", ";
+        }
+        ss << missing_columns[i];
       }
-    }
-
-    if (line_count == 0) {
-      error = "No data lines found in file: " + filepath;
+      error = ss.str();
       return false;
     }
 
-    // Reset file to beginning (after header)
-    file.clear();
-    file.seekg(0, std::ios::beg);
-    std::getline(file, line); // Skip header
+    const size_t max_required_idx = static_cast<size_t>(std::max(
+        {idx_x, idx_y, idx_std_x, idx_std_y, idx_rotation, idx_amp}));
+
+    struct ParsedRow {
+      double x_norm;
+      double y_norm;
+      double std_x_norm;
+      double std_y_norm;
+      double rotation_raw;
+      double amp;
+      size_t line_number;
+    };
+    std::vector<ParsedRow> parsed_rows;
+
+    std::string line;
+    size_t line_number = 1; // Header line is 1.
+    while (std::getline(file, line)) {
+      line_number++;
+      if (isWhitespaceOnly(line)) {
+        continue;
+      }
+
+      auto cols = splitCSVLine(line);
+      if (cols.size() <= max_required_idx) {
+        error = "Line " + std::to_string(line_number) + " has " +
+                std::to_string(cols.size()) +
+                " columns; expected at least " +
+                std::to_string(max_required_idx + 1);
+        return false;
+      }
+
+      ParsedRow row{};
+      row.line_number = line_number;
+      if (!parseDouble(cols[static_cast<size_t>(idx_x)], row.x_norm) ||
+          !parseDouble(cols[static_cast<size_t>(idx_y)], row.y_norm) ||
+          !parseDouble(cols[static_cast<size_t>(idx_std_x)], row.std_x_norm) ||
+          !parseDouble(cols[static_cast<size_t>(idx_std_y)], row.std_y_norm) ||
+          !parseDouble(cols[static_cast<size_t>(idx_rotation)],
+                       row.rotation_raw) ||
+          !parseDouble(cols[static_cast<size_t>(idx_amp)], row.amp)) {
+        error = "Failed to parse numeric values at line " +
+                std::to_string(line_number);
+        return false;
+      }
+
+      parsed_rows.push_back(row);
+    }
+
+    if (parsed_rows.empty()) {
+      error = "No data rows found in file: " + filepath;
+      return false;
+    }
+
+    bool rotation_in_degrees = false;
+    bool rotation_in_radians = false;
+    const std::string rotation_header = toLower(headers[idx_rotation]);
+    if (rotation_header.find("deg") != std::string::npos) {
+      rotation_in_degrees = true;
+    }
+    if (rotation_header.find("rad") != std::string::npos) {
+      rotation_in_radians = true;
+    }
+
+    if (!rotation_in_degrees && !rotation_in_radians) {
+      rotation_in_degrees = std::any_of(
+          parsed_rows.begin(), parsed_rows.end(), [](const ParsedRow &row) {
+            return std::abs(row.rotation_raw) > 2.0 * M_PI;
+          });
+    }
 
     std::vector<Gaussian2D> gaussians;
-    for (size_t i = 0; i < line_count; ++i) {
-      std::getline(file, line);
-      auto cols = splitCSVLine(line);
-
-      double x_norm = std::stod(cols[static_cast<size_t>(idx_x)]);
-      double y_norm = std::stod(cols[static_cast<size_t>(idx_y)]);
-      double std_x_norm = std::stod(cols[static_cast<size_t>(idx_std_x)]);
-      double std_y_norm = std::stod(cols[static_cast<size_t>(idx_std_y)]);
-      double rotation_val = std::stod(cols[static_cast<size_t>(idx_rotation)]);
-      double amp = std::stod(cols[static_cast<size_t>(idx_amp)]);
-
-      double rotation = (std::abs(rotation_val) > 2.0 * M_PI)
-                            ? rotation_val * M_PI / 180.0
-                            : rotation_val;
+    gaussians.reserve(parsed_rows.size());
+    for (const auto &row : parsed_rows) {
+      const double rotation = rotation_in_degrees
+                                  ? row.rotation_raw * M_PI / 180.0
+                                  : row.rotation_raw;
 
       double area_width = area_max_x - area_min_x;
       double area_height = area_max_y - area_min_y;
-      double area_diagonal =
-          std::sqrt(area_width * area_width + area_height * area_height);
-
-      double x = area_min_x + x_norm * area_width;
-      double y = area_min_y + y_norm * area_height;
-      double std_x = std_x_norm * area_width;
-      double std_y = std_y_norm * area_height;
+      double x = area_min_x + row.x_norm * area_width;
+      double y = area_min_y + row.y_norm * area_height;
+      double std_x = row.std_x_norm * area_width;
+      double std_y = row.std_y_norm * area_height;
 
       Gaussian2D g;
       g.mean_x = x;
@@ -203,7 +277,7 @@ public:
       g.std_x = std_x;
       g.std_y = std_y;
       g.rotation = rotation;
-      g.amplitude = amp;
+      g.amplitude = row.amp;
       gaussians.push_back(g);
     }
 
